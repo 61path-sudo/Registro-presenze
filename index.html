@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-title" content="Registro">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#8A2434">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Registro lezioni di pianoforte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#E9ECEF; --surface:#FFFFFF; --surface2:#F4F6F8; --ink:#1A2230; --muted:#5E6878; --line:#D3D8DF;
+  --felt:#8A2434; --felt-ink:#FFFFFF; --ebony:#1C1F26; --ivory:#FBFBF9;
+  --ok:#2E7A57; --ok-bg:#E2F1E9; --warn:#9A6411; --warn-bg:#F7EBD6; --bad:#A83434; --bad-bg:#F6E0E0;
+  --me:#3A57A0; --me-bg:#E1E7F5; --move:#74479A; --move-bg:#EEE5F5; --rec:#1F7480; --rec-bg:#DDF0F2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13161C; --surface:#1D222B; --surface2:#252B35; --ink:#E9ECF1; --muted:#9AA3B2; --line:#343B47;
+    --felt:#C8505F; --felt-ink:#FFFFFF; --ebony:#07080B; --ivory:#E8E8E4;
+    --ok:#6FCB9C; --ok-bg:#1E3A2D; --warn:#E3B05C; --warn-bg:#3B2F1A; --bad:#EE8A8A; --bad-bg:#3E2223;
+    --me:#93A9E8; --me-bg:#232E4A; --move:#C29BE6; --move-bg:#33263F; --rec:#7FD0DA; --rec-bg:#18363A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13161C; --surface:#1D222B; --surface2:#252B35; --ink:#E9ECF1; --muted:#9AA3B2; --line:#343B47;
+  --felt:#C8505F; --felt-ink:#FFFFFF; --ebony:#07080B; --ivory:#E8E8E4;
+  --ok:#6FCB9C; --ok-bg:#1E3A2D; --warn:#E3B05C; --warn-bg:#3B2F1A; --bad:#EE8A8A; --bad-bg:#3E2223;
+  --me:#93A9E8; --me-bg:#232E4A; --move:#C29BE6; --move-bg:#33263F; --rec:#7FD0DA; --rec-bg:#18363A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--felt);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 110px}
+h1{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:1.6rem;line-height:1.15;margin:4px 0 2px}
+h2{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:1.25rem;margin:22px 0 10px}
+.sub{color:var(--muted);font-size:.9rem;margin:0}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sync{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.syncbtn{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:7px 12px;min-height:36px}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--felt);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:.92rem;display:flex;gap:10px;align-items:center;justify-content:space-between}
+
+/* keyboard week strip */
+.weeknav{display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px}
+.weeknav .lbl{font-weight:600}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;min-width:40px;height:40px;padding:0 10px;font-weight:600}
+.keys{position:relative;display:grid;grid-template-columns:repeat(7,1fr);background:var(--ebony);padding:10px 6px 6px;border-radius:12px 12px 8px 8px;gap:3px;box-shadow:inset 0 6px 0 var(--felt)}
+.key{position:relative;background:var(--ivory);color:#1A2230;border:0;border-radius:0 0 7px 7px;height:96px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:0 0 9px;box-shadow:inset 0 -5px 0 #D9D9D2;transition:transform .08s, box-shadow .08s}
+.key .d{font-size:.72rem;color:#5E6878}
+.key .n{font-weight:700;font-size:1.05rem}
+.key .dots{display:flex;gap:3px;height:6px;margin-bottom:6px}
+.key .dots i{width:6px;height:6px;border-radius:50%;background:#B6BBC4}
+.key .dots i.todo{background:#C27A10}
+.key .dots i.done{background:#2E7A57}
+.key.sel{transform:translateY(2px);box-shadow:inset 0 -2px 0 #D9D9D2, inset 0 0 0 3px var(--felt);}
+.key.today .n{color:#8A2434}
+.black{position:absolute;top:10px;width:calc((100% - 12px)/7*0.55);height:52px;background:linear-gradient(#2A2E37,#0E1014);border-radius:0 0 4px 4px;pointer-events:none;z-index:2;transform:translateX(-50%)}
+@media (prefers-reduced-motion: reduce){.key{transition:none}}
+
+.daytitle{display:flex;justify-content:space-between;align-items:baseline;margin:20px 0 10px}
+.daytitle h2{margin:0}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 12px 14px;text-align:left;width:100%}
+.card .time{font-weight:700;font-variant-numeric:tabular-nums;min-width:48px}
+.card .main{flex:1;min-width:0}
+.card .name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .meta{font-size:.82rem;color:var(--muted);margin-top:2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.card.faded{opacity:.62}
+.chip{display:inline-block;font-size:.76rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--muted)}
+.c-presente{background:var(--ok-bg);color:var(--ok)}
+.c-giust{background:var(--warn-bg);color:var(--warn)}
+.c-ingiust{background:var(--bad-bg);color:var(--bad)}
+.c-insegnante{background:var(--me-bg);color:var(--me)}
+.c-spostata{background:var(--move-bg);color:var(--move)}
+.c-recupero{background:var(--rec-bg);color:var(--rec)}
+.c-chiuso{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.c-todo{background:transparent;color:var(--warn);border:1px dashed var(--warn)}
+.quick{flex:none;width:42px;height:42px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);font-size:1.1rem;color:var(--ok)}
+.quick.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--muted);text-align:center}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;background:var(--felt);color:var(--felt-ink)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:.88rem;border-radius:10px}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.block{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.addline{margin-top:12px}
+
+/* bottom nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs button{background:none;border:0;padding:10px 4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button.on{color:var(--felt)}
+.badge{position:absolute;top:6px;left:calc(50% + 6px);background:var(--felt);color:#fff;font-size:.68rem;border-radius:99px;padding:0 6px;min-width:18px;line-height:18px}
+
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(10,12,16,.45);z-index:40;display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-top:calc(24px + env(safe-area-inset-top,0px))}
+body.locked{overflow:hidden}
+button,input,select,textarea,a{touch-action:manipulation}
+.field input,.field select{min-height:44px;min-width:0;-webkit-appearance:none;appearance:none;font-size:16px}
+.field input[type=date],.field input[type=time]{display:block;text-align:left}
+.sheet{background:var(--surface);width:100%;max-width:560px;margin-top:auto;border-radius:20px 20px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:up .18s ease-out}
+@keyframes up{from{opacity:.3}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.sheet{animation:none}}
+.sheet{position:relative}
+.xbtn{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface2);color:var(--muted);font-size:1.1rem;line-height:1}
+.sheet h3{padding-right:44px}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line);margin:4px auto 12px}
+.sheet h3{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:1.3rem;margin:0}
+.sheet .lead{color:var(--muted);margin:2px 0 14px;font-size:.92rem}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbtn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 10px;text-align:left;font-weight:600;font-size:.92rem;line-height:1.2}
+.sbtn small{display:block;font-weight:400;color:var(--muted);font-size:.76rem;margin-top:2px}
+.sbtn.on.k-presente{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.sbtn.on.k-giust{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
+.sbtn.on.k-ingiust{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.sbtn.on.k-insegnante{border-color:var(--me);background:var(--me-bg);color:var(--me)}
+.sbtn.on.k-chiuso{border-color:var(--muted);background:var(--surface2);color:var(--ink)}
+.sbtn.wide{grid-column:span 2}
+.mtable{width:100%;border-collapse:collapse;font-size:.9rem}
+.mtable th,.mtable td{padding:9px 6px;text-align:center;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.mtable th{font-size:.74rem;color:var(--muted);font-weight:600;border-top:0;vertical-align:bottom}
+.mtable td:first-child,.mtable th:first-child{text-align:left}
+.mtable td.big{font-weight:700;font-size:1.05rem}
+.mtable tfoot td{font-weight:700;border-top:2px solid var(--line)}
+.scrollx{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 10px}
+.sb-seg{margin:14px 0 4px}
+.sb-seg.seg{background:var(--surface)}
+.sb-seg.seg button.on{background:var(--surface2)}
+.sbtn small{color:inherit;opacity:.85}
+.seg{display:flex;background:var(--surface2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;border-radius:9px;padding:9px 6px;font-weight:600;font-size:.9rem;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:.85rem;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.field textarea{min-height:64px;resize:vertical;font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sect{margin-top:16px}
+.sect > .t{font-size:.85rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+.stack{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.note{font-size:.85rem;color:var(--muted)}
+
+/* recuperi & allievi */
+.group{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.group .gname{font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ritem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.ritem:first-of-type{border-top:0}
+.ritem .w{font-size:.92rem}
+.ritem .w b{font-weight:600}
+.ritem .w div{font-size:.8rem;color:var(--muted)}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:.8rem;padding:4px 0}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.statbox{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 4px}
+.statbox div{background:var(--surface2);border-radius:12px;padding:10px;text-align:center}
+.statbox b{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.statbox span{font-size:.74rem;color:var(--muted)}
+.hist{display:flex;flex-direction:column}
+.hrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:.88rem;z-index:60;max-width:90%}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<nav class="tabs"><div class="in">
+  <button data-tab="agenda" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+  <button data-tab="recuperi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/><path d="M12 8v4l3 2"/></svg>Recuperi<span class="badge hidden" id="recBadge"></span></button>
+  <button data-tab="allievi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg>Allievi</button>
+</div></nav>
+<div id="sheetRoot"></div>
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script>
+/* ---------- utilities ---------- */
+const DAYS=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const DAYS_FULL=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+const MONTHS=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const dow=s=>(parse(s).getDay()+6)%7;
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const monday=s=>addDays(s,-dow(s));
+const mk=s=>s.slice(0,7);
+const today=()=>iso(new Date());
+const fmtLong=s=>{const d=parse(s);return DAYS_FULL[dow(s)]+' '+d.getDate()+' '+MONTHS[d.getMonth()]};
+const fmtShort=s=>{const d=parse(s);return DAYS[dow(s)].toLowerCase()+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+
+const STATUS={
+  presente:{label:'Presente',short:'Presente'},
+  giust:{label:'Assente giustificato',short:'Ass. giustificata'},
+  ingiust:{label:'Assente non giustificato',short:'Ass. non giustificata'},
+  insegnante:{label:'Saltata per me',short:'Saltata per me'},
+  spostata:{label:'Spostata',short:'Spostata'},
+  chiuso:{label:'Chiuso (festività)',short:'Chiuso'}
+};
+const ABSENCES=['giust','ingiust','insegnante'];
+const DEFAULT_REC={giust:'da',ingiust:'no',insegnante:'da'};
+
+/* ---------- state ---------- */
+let S={students:[],months:{}};
+const ui={tab:'agenda',date:today(),allView:'elenco',month:mk(today())};
+const LS='pianoRegistro.v1';
+
+function month(m){return S.months[m]||(S.months[m]={records:{},extras:[]})}
+function slotAt(st,date){
+  if(st.until&&date>st.until)return null;
+  let cur=null;for(const sl of st.slots){if(sl.from<=date)cur=sl}
+  return cur;
+}
+function student(id){return S.students.find(s=>s.id===id)}
+
+/* A lesson is either a regular weekly slot (key "sid@date") or an extra (id "x...") */
+function lessonsOn(date){
+  const out=[];const m=month(mk(date));
+  for(const st of S.students){
+    const sl=slotAt(st,date);
+    if(sl&&sl.day===dow(date)){
+      const key=st.id+'@'+date;const r=m.records[key]||{};
+      out.push({key,sid:st.id,date,time:sl.time,dur:sl.dur,kind:'regular',...r});
+    }
+  }
+  for(const x of m.extras){if(x.date===date)out.push({...x,key:x.id})}
+  return out.sort((a,b)=>a.time.localeCompare(b.time));
+}
+function getLesson(key,date){return lessonsOn(date).find(l=>l.key===key)}
+function setLesson(key,date,patch){
+  const m=month(mk(date));
+  if(key.startsWith('x')){const x=m.extras.find(e=>e.id===key);Object.assign(x,patch);for(const k in patch)if(patch[k]===undefined)delete x[k]}
+  else{const r=m.records[key]||(m.records[key]={});Object.assign(r,patch);for(const k in patch)if(patch[k]===undefined)delete r[k];if(!Object.keys(r).length)delete m.records[key]}
+  markDirty(mk(date));
+}
+function allExtras(){const a=[];for(const m in S.months)for(const x of S.months[m].extras)a.push(x);return a}
+function removeExtra(id,date){const m=month(mk(date));m.extras=m.extras.filter(e=>e.id!==id);markDirty(mk(date))}
+function addExtra(x){month(mk(x.date)).extras.push(x);markDirty(mk(x.date))}
+
+/* all lessons of a student up to a date */
+function studentLessons(sid,upTo){
+  const st=student(sid);if(!st||!st.slots.length)return[];
+  const out=[];let d=st.slots[0].from;
+  while(d<=upTo){
+    const sl=slotAt(st,d);
+    if(sl&&sl.day===dow(d)){const key=sid+'@'+d;const r=month(mk(d)).records[key]||{};out.push({key,sid,date:d,time:sl.time,kind:'regular',...r})}
+    d=addDays(d,1);
+    if(st.until&&d>st.until)break;
+  }
+  for(const x of allExtras())if(x.sid===sid&&x.date<=upTo)out.push({...x,key:x.id});
+  return out.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+}
+
+/* make-up tracking */
+function recoveryState(l){
+  if(!ABSENCES.includes(l.status)||l.recupero!=='da')return null;
+  const linked=allExtras().filter(x=>x.kind==='recupero'&&x.ref===l.key).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  if(linked.some(x=>x.status==='presente'))return{state:'fatto',x:linked.find(x=>x.status==='presente')};
+  const planned=linked.find(x=>!x.status);
+  if(planned)return{state:'fissato',x:planned};
+  return{state:'da'};
+}
+function pendingRecoveries(){
+  const out=[];const t=today();
+  for(const st of S.students){
+    for(const l of studentLessons(st.id,addDays(t,400))){
+      const r=recoveryState(l);if(r&&r.state!=='fatto')out.push({l,r});
+    }
+  }
+  return out;
+}
+
+/* ---------- persistence: this device + a file in a private GitHub repository ---------- */
+const CFG_KEY='pianoRegistro.github',FILE='registro.json';
+let cfg=null;try{cfg=JSON.parse(localStorage.getItem(CFG_KEY)||'null')}catch(e){}
+let remoteSha=null,saving=false,saveTimer=null,editVersion=0,pending=false;
+try{pending=localStorage.getItem(LS+'.pending')==='1'}catch(e){}
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+function setPending(v){pending=v;lsSet(LS+'.pending',v?'1':'0')}
+function saveLocal(){lsSet(LS,JSON.stringify(S))}
+function loadLocal(){try{const v=lsGet(LS);if(v){const p=JSON.parse(v);if(p&&p.students)S=normalize(p)}}catch(e){}}
+function normalize(o){return{students:Array.isArray(o.students)?o.students:[],months:o.months&&typeof o.months==='object'?o.months:{}}}
+function payload(){return{app:'registro-pianoforte',version:1,updated:new Date().toISOString(),students:S.students,months:S.months}}
+function markDirty(){editVersion++;saveLocal();setPending(true);if(cfg){setSync('Da sincronizzare');clearTimeout(saveTimer);saveTimer=setTimeout(push,2500)}}
+function setSync(t){ui.sync=t;const el=document.getElementById('sync');if(el)el.textContent=t}
+function b64enc(str){const b=new TextEncoder().encode(str);let s='';for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)}
+function b64dec(b){const s=atob(b.replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0)))}
+function ghFetch(path,opt={},c=cfg){
+  return fetch('https://api.github.com/repos/'+encodeURIComponent(c.owner)+'/'+encodeURIComponent(c.repo)+path,{cache:'no-store',...opt,
+    headers:{'Authorization':'Bearer '+c.token,'Accept':opt.accept||'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(opt.body?{'Content-Type':'application/json'}:{})}});
+}
+async function ghErr(r){
+  let msg='';try{msg=(await r.json()).message||''}catch(e){}
+  if(r.status===401)return{auth:true,message:'Il codice di accesso non è valido o è scaduto.'};
+  if(r.status===403)return{auth:/permission|resource not accessible/i.test(msg),message:/rate limit/i.test(msg)?'Troppe richieste a GitHub, riprovo tra poco.':'Il codice di accesso non ha il permesso di scrivere nel repository (serve “Contents: Read and write”).'};
+  if(r.status===404)return{auth:true,message:'Repository non trovato: controlla nome utente e nome del repository, e che il codice abbia accesso a quel repository.'};
+  return{message:'GitHub ha risposto con un errore ('+r.status+(msg?': '+msg:'')+').'};
+}
+async function pull(){
+  const r=await ghFetch('/contents/'+FILE);
+  if(r.status===404){remoteSha=null;return null}
+  if(!r.ok)throw await ghErr(r);
+  const j=await r.json();remoteSha=j.sha;
+  let txt=j.content&&j.encoding==='base64'?b64dec(j.content):'';
+  if(!txt&&j.size>0){const r2=await ghFetch('/contents/'+FILE,{accept:'application/vnd.github.raw'});if(!r2.ok)throw await ghErr(r2);txt=await r2.text()}
+  return txt?normalize(JSON.parse(txt)):normalize({});
+}
+/* combine two copies; on the same item this device wins */
+function merge(rem,loc){
+  const out={students:rem.students.slice(),months:JSON.parse(JSON.stringify(rem.months))};
+  for(const s of loc.students){const i=out.students.findIndex(x=>x.id===s.id);if(i>=0)out.students[i]=s;else out.students.push(s)}
+  for(const m in loc.months){const T=out.months[m]||(out.months[m]={records:{},extras:[]});const L=loc.months[m];
+    Object.assign(T.records,L.records);for(const x of L.extras){const i=T.extras.findIndex(e=>e.id===x.id);if(i>=0)T.extras[i]=x;else T.extras.push(x)}}
+  return out;
+}
+async function push(){
+  if(!cfg||!pending)return;
+  if(saving){clearTimeout(saveTimer);saveTimer=setTimeout(push,1500);return}
+  if(!navigator.onLine){setSync('Offline, sincronizzo dopo');return}
+  saving=true;setSync('Sincronizzazione…');const v=editVersion;let ok=false;
+  try{
+    for(let i=0;i<3&&!ok;i++){
+      const body={message:'Registro aggiornato '+new Date().toLocaleString('it-IT'),content:b64enc(JSON.stringify(payload()))};
+      if(remoteSha)body.sha=remoteSha;
+      const r=await ghFetch('/contents/'+FILE,{method:'PUT',body:JSON.stringify(body)});
+      if(r.ok){const j=await r.json();remoteSha=j.content.sha;lsSet(LS+'.sha',remoteSha);ok=true;break}
+      if(r.status===409||r.status===422){const rem=await pull();if(rem){S=merge(rem,S);saveLocal();if(!root.innerHTML)render()}continue}
+      throw await ghErr(r);
+    }
+    if(ok){if(v===editVersion)setPending(false);setSync(pending?'Da sincronizzare':'Sincronizzato')}
+    else setSync('Non sincronizzato');
+  }catch(e){setSync(e.auth?'Accesso GitHub da sistemare':'Non sincronizzato');if(e.auth||e.message)toast(e.message||'Sincronizzazione non riuscita')}
+  saving=false;
+  if(ok&&pending){clearTimeout(saveTimer);saveTimer=setTimeout(push,1500)}
+}
+async function sync(){
+  if(!cfg){setSync('Solo su questo dispositivo');return}
+  if(saving)return;
+  if(!navigator.onLine){setSync(pending?'Offline, sincronizzo dopo':'Offline');return}
+  setSync('Sincronizzazione…');
+  try{
+    const rem=await pull();const last=lsGet(LS+'.sha');
+    if(!rem){setPending(true);await push();return}
+    if(pending){if(remoteSha!==last)S=merge(rem,S);saveLocal();if(!root.innerHTML)render();await push()}
+    else{if(remoteSha!==last){S=rem;saveLocal();if(!root.innerHTML)render()}lsSet(LS+'.sha',remoteSha);setSync('Sincronizzato')}
+  }catch(e){setSync(e.auth?'Accesso GitHub da sistemare':'Non sincronizzato');if(e.message)toast(e.message)}
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync();else if(pending)push()});
+window.addEventListener('online',()=>sync());
+window.addEventListener('pagehide',()=>{if(pending&&cfg&&!saving)push()});
+
+/* ---------- render ---------- */
+const app=document.getElementById('app');
+function render(){
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
+  const pend=pendingRecoveries().filter(p=>p.r.state==='da').length;
+  const bd=document.getElementById('recBadge');bd.textContent=pend;bd.classList.toggle('hidden',!pend);
+  if(ui.tab==='agenda')renderAgenda();else if(ui.tab==='recuperi')renderRecuperi();else renderAllievi();
+}
+function header(title,sub){
+  return `<div class="top"><div><h1>${title}</h1><p class="sub">${sub}</p></div><button class="sync syncbtn" data-act="settings" aria-label="Impostazioni e sincronizzazione"><span id="sync">${esc(ui.sync||'')}</span> ⚙︎</button></div>`;
+}
+function chipFor(l){
+  const t=today();
+  if(l.status==='spostata')return `<span class="chip c-spostata">Spostata</span>`;
+  if(l.status){
+    let s=`<span class="chip c-${l.status}">${STATUS[l.status].short}</span>`;
+    if(ABSENCES.includes(l.status)){
+      const r=recoveryState(l);
+      if(r)s+=` <span class="chip c-recupero">${r.state==='fatto'?'Recuperata':r.state==='fissato'?'Recupero '+fmtShort(r.x.date):'Da recuperare'}</span>`;
+    }
+    return s;
+  }
+  return l.date<=t?`<span class="chip c-todo">Da segnare</span>`:'';
+}
+function kindNote(l){
+  if(l.kind==='recupero'){const o=l.refDate?fmtShort(l.refDate):'';return `<span class="chip c-recupero">Recupero${o?' del '+o:''}</span>`}
+  if(l.kind==='spostata')return `<span class="chip c-spostata">Spostata da ${fmtShort(l.refDate)}</span>`;
+  if(l.kind==='extra')return `<span class="chip">Lezione extra</span>`;
+  if(l.status==='spostata'&&l.movedTo){const x=allExtras().find(e=>e.id===l.movedTo);if(x)return `<span>→ ${fmtShort(x.date)} alle ${x.time}</span>`}
+  return '';
+}
+function renderAgenda(){
+  const mon=monday(ui.date);const t=today();
+  const d0=parse(mon),d6=parse(addDays(mon,6));
+  const range=d0.getMonth()===d6.getMonth()?`${d0.getDate()}–${d6.getDate()} ${MONTHS[d6.getMonth()]}`:`${d0.getDate()} ${MONTHS[d0.getMonth()].slice(0,3)} – ${d6.getDate()} ${MONTHS[d6.getMonth()].slice(0,3)}`;
+  let keys='';
+  for(let i=0;i<7;i++){
+    const d=addDays(mon,i);const ls=lessonsOn(d);
+    const dots=ls.slice(0,4).map(l=>`<i class="${l.status?'done':(d<=t?'todo':'')}"></i>`).join('');
+    keys+=`<button class="key${d===ui.date?' sel':''}${d===t?' today':''}" data-day="${d}" aria-label="${fmtLong(d)}, ${ls.length} lezioni"><span class="dots">${dots}</span><span class="n">${parse(d).getDate()}</span><span class="d">${DAYS[i]}</span></button>`;
+  }
+  // black keys after Mon, Tue, Thu, Fri, Sat (like C D _ F G A)
+  const blacks=[1,2,4,5,6].map(i=>`<span class="black" style="left:calc(6px + (100% - 12px)/7*${i})"></span>`).join('');
+  const ls=lessonsOn(ui.date);
+  const cards=ls.length?ls.map(l=>{
+    const st=student(l.sid);const faded=l.status==='spostata';
+    return `<div class="card${faded?' faded':''}">
+      <button class="main" style="all:unset;flex:1;min-width:0;cursor:pointer;display:flex;gap:12px;align-items:center" data-open="${l.key}">
+        <span class="time">${l.time}</span>
+        <span class="main"><div class="name">${esc(st?st.name:'Allievo rimosso')}</div><div class="meta">${kindNote(l)} ${chipFor(l)}</div></span>
+      </button>
+      ${faded?'':`<button class="quick${l.status==='presente'?' on':''}" data-quick="${l.key}" aria-label="Segna presente">✓</button>`}
+    </div>`}).join(''):`<div class="empty">${S.students.length?'Nessuna lezione in questo giorno.':'Aggiungi i tuoi allievi con il loro giorno e orario fisso: le lezioni compariranno qui ogni settimana.'}</div>`;
+  app.innerHTML=header('Registro lezioni',`Settimana ${range}`)+
+  `<div class="weeknav"><button class="iconbtn" data-week="-7" aria-label="Settimana precedente">‹</button>
+   <button class="iconbtn" data-goto="${t}">Oggi</button>
+   <button class="iconbtn" data-week="7" aria-label="Settimana successiva">›</button></div>
+   ${!cfg&&!lsGet(LS+'.nobanner')?`<div class="banner"><span>I dati sono salvati solo qui. Collega GitHub per averli su tutti i dispositivi.</span><span class="row" style="flex-wrap:nowrap"><button class="btn small" data-act="settings">Collega</button><button class="iconbtn" data-act="hideBanner" aria-label="Nascondi">✕</button></span></div>`:''}
+   <div class="keys">${keys}${blacks}</div>
+   <div class="daytitle"><h2>${fmtLong(ui.date)}</h2><span class="note">${ls.length} ${ls.length===1?'lezione':'lezioni'}</span></div>
+   <div class="list">${cards}</div>
+   <div class="row addline">${S.students.length?`<button class="btn ghost small" data-act="addLesson">+ Lezione extra in questo giorno</button><button class="btn ghost small" data-act="closure">Chiusura / festività</button>`:`<button class="btn" data-act="newStudent">Aggiungi un allievo</button>`}</div>`;
+}
+function renderRecuperi(){
+  const p=pendingRecoveries();const by={};
+  for(const it of p)(by[it.l.sid]=by[it.l.sid]||[]).push(it);
+  const groups=Object.keys(by).map(sid=>{
+    const st=student(sid);const items=by[sid].sort((a,b)=>a.l.date.localeCompare(b.l.date));
+    return `<div class="group"><div class="gname">${esc(st.name)}<span class="chip c-recupero">${items.filter(i=>i.r.state==='da').length} da fissare</span></div>
+    ${items.map(({l,r})=>`<div class="ritem"><div class="w"><b>${fmtShort(l.date)}</b> alle ${l.time}<div>${STATUS[l.status].label}${l.note?' · '+esc(l.note):''}</div>
+      ${r.state==='da'?`<button class="linkbtn" data-norec="${l.key}" data-date="${l.date}">Non si recupera</button>`:''}</div>
+      ${r.state==='fissato'?`<button class="btn ghost small" data-goto="${r.x.date}">Fissato ${fmtShort(r.x.date)} ${r.x.time}</button>`:`<button class="btn small" data-plan="${l.key}" data-date="${l.date}">Fissa recupero</button>`}
+    </div>`).join('')}</div>`}).join('');
+  app.innerHTML=header('Recuperi','Lezioni saltate che vanno ancora recuperate')+
+  `<div style="margin-top:16px">${groups||'<div class="empty">Nessun recupero in sospeso. Quando segni un’assenza come “da recuperare”, comparirà qui.</div>'}</div>`;
+}
+function statsFor(sid){
+  const ls=studentLessons(sid,today());const c={presente:0,giust:0,ingiust:0,insegnante:0,spostata:0,chiuso:0,todo:0,rec:0};
+  for(const l of ls){if(l.status)c[l.status]++;else c.todo++;const r=recoveryState(l);if(r&&r.state!=='fatto')c.rec++}
+  return c;
+}
+function renderAllievi(){
+  if(ui.allView==='mese')return renderMese();
+  const act=S.students.filter(s=>!s.until||s.until>=today()).sort((a,b)=>a.name.localeCompare(b.name));
+  const arch=S.students.filter(s=>s.until&&s.until<today());
+  const card=s=>{const sl=slotAt(s,today())||s.slots[s.slots.length-1];const c=statsFor(s.id);
+    return `<button class="card" data-student="${s.id}"><span class="main"><div class="name">${esc(s.name)}</div>
+      <div class="meta">${sl?DAYS_FULL[sl.day]+' '+sl.time+' · '+sl.dur+' min':''}</div>
+      <div class="stats"><span class="chip c-presente">${c.presente} pres.</span>${c.giust?`<span class="chip c-giust">${c.giust} giust.</span>`:''}${c.ingiust?`<span class="chip c-ingiust">${c.ingiust} non giust.</span>`:''}${c.insegnante?`<span class="chip c-insegnante">${c.insegnante} per me</span>`:''}${c.rec?`<span class="chip c-recupero">${c.rec} da recuperare</span>`:''}</div></span></button>`};
+  app.innerHTML=header('Allievi',`${act.length} ${act.length===1?'allievo attivo':'allievi attivi'}`)+segAll()+
+  `<div class="row" style="margin:16px 0 12px"><button class="btn" data-act="newStudent">+ Nuovo allievo</button>${S.students.length?`<button class="btn ghost" data-act="export">Esporta CSV</button><button class="btn ghost" data-act="backup">Backup completo</button>`:''}</div>
+   <div class="list">${act.map(card).join('')||'<div class="empty">Ancora nessun allievo.</div>'}</div>
+   ${arch.length?`<h2>Archiviati</h2><div class="list">${arch.map(card).join('')}</div>`:''}`;
+}
+
+function segAll(){return `<div class="seg sb-seg"><button data-allview="elenco" class="${ui.allView==='elenco'?'on':''}">Elenco</button><button data-allview="mese" class="${ui.allView==='mese'?'on':''}">Riepilogo del mese</button></div>`}
+function daysOfMonth(m){const out=[];let d=m+'-01';while(mk(d)===m){out.push(d);d=addDays(d,1)}return out}
+function monthSummary(m){
+  const rows={};
+  for(const d of daysOfMonth(m))for(const l of lessonsOn(d)){
+    if(!student(l.sid))continue;
+    const r=rows[l.sid]||(rows[l.sid]={presente:0,giust:0,ingiust:0,insegnante:0,chiuso:0,todo:0,rec:0,recFatti:0,prev:0});
+    if(l.status==='spostata')continue;
+    if(l.kind!=='recupero')r.prev++;
+    if(l.status)r[l.status]++;else if(d<=today())r.todo++;
+    if(l.kind==='recupero'&&l.status==='presente')r.recFatti++;
+    const rs=recoveryState(l);if(rs&&rs.state!=='fatto')r.rec++;
+  }
+  return rows;
+}
+function renderMese(){
+  const m=ui.month;const [y,mo]=m.split('-').map(Number);const rows=monthSummary(m);
+  const ids=Object.keys(rows).sort((a,b)=>student(a).name.localeCompare(student(b).name));
+  const tot={presente:0,giust:0,ingiust:0,insegnante:0,chiuso:0,rec:0,prev:0};
+  ids.forEach(id=>{for(const k in tot)tot[k]+=rows[id][k]});
+  const todo=ids.reduce((s,id)=>s+rows[id].todo,0);
+  app.innerHTML=header('Allievi','Lezioni del mese, utile per i pagamenti')+segAll()+
+  `<div class="weeknav"><button class="iconbtn" data-mon="-1" aria-label="Mese precedente">‹</button><span class="lbl">${MONTHS[mo-1][0].toUpperCase()+MONTHS[mo-1].slice(1)} ${y}</span><button class="iconbtn" data-mon="1" aria-label="Mese successivo">›</button></div>
+  ${ids.length?`<div class="scrollx"><table class="mtable"><thead><tr><th>Allievo</th><th>Svolte</th><th>Previste</th><th>Ass. giust.</th><th>Ass. non giust.</th><th>Per me</th><th>Chiuso</th><th>Da recup.</th></tr></thead>
+  <tbody>${ids.map(id=>{const r=rows[id];return `<tr><td>${esc(student(id).name)}</td><td class="big">${r.presente}</td><td>${r.prev}</td><td>${r.giust||'–'}</td><td>${r.ingiust||'–'}</td><td>${r.insegnante||'–'}</td><td>${r.chiuso||'–'}</td><td>${r.rec||'–'}</td></tr>`}).join('')}</tbody>
+  <tfoot><tr><td>Totale</td><td>${tot.presente}</td><td>${tot.prev}</td><td>${tot.giust}</td><td>${tot.ingiust}</td><td>${tot.insegnante}</td><td>${tot.chiuso}</td><td>${tot.rec}</td></tr></tfoot></table></div>
+  <p class="note">Svolte comprende anche recuperi, lezioni spostate ed extra fatte nel mese. Previste sono le lezioni in calendario, recuperi esclusi.${todo?` <b>${todo} ${todo===1?'lezione':'lezioni'} ancora da segnare.</b>`:''}</p>
+  <div class="row"><button class="btn ghost" data-act="exportMonth">Esporta riepilogo CSV</button></div>`
+  :'<div class="empty">Nessuna lezione in questo mese.</div>'}`;
+}
+function closureSheet(){
+  openSheet(`<h3>Chiusura o festività</h3><p class="lead">Segna come “chiuso” tutte le lezioni del periodo. Non contano come assenze e non vanno recuperate.</p>
+  <div class="two"><div class="field"><label for="c1">Dal</label><input type="date" id="c1" value="${ui.date}"></div>
+  <div class="field"><label for="c2">Al</label><input type="date" id="c2" value="${ui.date}"></div></div>
+  <div class="field"><label for="cn">Motivo (facoltativo)</label><input id="cn" placeholder="Es. vacanze di Natale" autocomplete="off"></div>
+  <p class="note">Le lezioni già segnate (presenze, assenze, spostamenti) non vengono toccate.</p>
+  <div class="stack"><button class="btn" id="ok">Segna come chiuso</button><button class="btn ghost" id="undo">Togli la chiusura in questo periodo</button><button class="btn ghost" data-close="1">Annulla</button></div>`,sh=>{
+    const range=()=>{let a=sh.querySelector('#c1').value,b=sh.querySelector('#c2').value;if(!a||!b)return null;if(b<a)[a,b]=[b,a];if((parse(b)-parse(a))/864e5>366){toast('Scegli un periodo di massimo un anno');return null}return[a,b]};
+    sh.querySelector('#ok').onclick=()=>{const r=range();if(!r)return;const note=sh.querySelector('#cn').value.trim();let n=0;
+      for(let d=r[0];d<=r[1];d=addDays(d,1))for(const l of lessonsOn(d))if(!l.status){setLesson(l.key,d,{status:'chiuso',recupero:undefined,note:note||l.note});n++}
+      closeSheet();toast(n?`${n} ${n===1?'lezione segnata':'lezioni segnate'} come chiuso`:'Nessuna lezione da segnare nel periodo')};
+    sh.querySelector('#undo').onclick=()=>{const r=range();if(!r)return;let n=0;
+      for(let d=r[0];d<=r[1];d=addDays(d,1))for(const l of lessonsOn(d))if(l.status==='chiuso'){setLesson(l.key,d,{status:undefined});n++}
+      closeSheet();toast(n?`Chiusura tolta da ${n} ${n===1?'lezione':'lezioni'}`:'Nessuna lezione chiusa nel periodo')};
+  });
+}
+
+/* ---------- sheets ---------- */
+const root=document.getElementById('sheetRoot');
+function openSheet(html,onMount){
+  root.innerHTML=`<div class="overlay"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div><button class="xbtn" type="button" data-close="1" aria-label="Chiudi">✕</button>${html}</div></div>`;
+  document.body.classList.add('locked');
+  const sh=root.querySelector('.sheet');onMount&&onMount(sh);
+}
+function closeSheet(){if(document.activeElement)document.activeElement.blur();root.innerHTML='';document.body.classList.remove('locked');render()}
+let downOnBackdrop=false;
+root.addEventListener('pointerdown',e=>{downOnBackdrop=e.target.classList&&e.target.classList.contains('overlay')});
+root.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest&&t.closest('[data-close]')){e.preventDefault();closeSheet();return}
+  if(t.classList&&t.classList.contains('overlay')&&downOnBackdrop&&!root.querySelector('form'))closeSheet();
+});
+window.addEventListener('error',e=>toast('Errore: '+(e.message||'sconosciuto')));
+window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&r.code)return;toast('Errore: '+(r&&r.message||r))});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&root.innerHTML)closeSheet()});
+
+function lessonSheet(key,date){
+  const l=getLesson(key,date);if(!l)return closeSheet();
+  const st=student(l.sid);const isAbs=ABSENCES.includes(l.status);const r=recoveryState(l);
+  const sb=(k,sub,w)=>`<button class="sbtn k-${k}${w?' wide':''}${l.status===k?' on':''}" data-status="${k}">${STATUS[k].label}<small>${sub}</small></button>`;
+  let extraInfo='';
+  if(l.kind==='recupero')extraInfo=`Recupero della lezione di ${fmtShort(l.refDate)}`;
+  if(l.kind==='spostata')extraInfo=`Spostata da ${fmtShort(l.refDate)}`;
+  if(l.kind==='extra')extraInfo='Lezione extra';
+  const moved=l.status==='spostata'&&l.movedTo?allExtras().find(x=>x.id===l.movedTo):null;
+  openSheet(`<h3>${esc(st?st.name:'')}</h3><p class="lead">${fmtLong(l.date)} alle ${l.time}${extraInfo?' · '+extraInfo:''}</p>
+  ${moved?`<div class="empty" style="text-align:left">Questa lezione è stata spostata a <b>${fmtLong(moved.date)}</b> alle ${moved.time}.</div>
+    <div class="stack"><button class="btn" type="button" data-close="1">Fatto</button><button class="btn ghost" data-goto2="${moved.date}">Vai alla nuova data</button><button class="btn danger" data-undo-move>Annulla lo spostamento</button></div>`:`
+  <div class="sgrid">${sb('presente','Lezione svolta')}${sb('giust','Ha avvisato')}${sb('ingiust','Senza preavviso')}${sb('insegnante','Assente io')}${sb('chiuso','Festività o chiusura, non si recupera',1)}</div>
+  ${isAbs?`<div class="sect"><div class="t">Va recuperata?</div><div class="seg"><button data-rec="da" class="${l.recupero==='da'?'on':''}">Sì, da recuperare</button><button data-rec="no" class="${l.recupero==='no'?'on':''}">No</button></div>
+    ${r?`<p class="note" style="margin:8px 0 0">${r.state==='fatto'?'Recuperata '+fmtShort(r.x.date)+'.':r.state==='fissato'?'Recupero fissato per '+fmtLong(r.x.date)+' alle '+r.x.time+'.':'Puoi fissare la data più avanti dalla scheda Recuperi, quando l’hai organizzata.'}</p>`:''}</div>`:''}
+  <div class="field sect"><label for="nt">Nota</label><textarea id="nt" placeholder="Es. brani studiati, motivo dell’assenza…">${esc(l.note||'')}</textarea></div>
+  <div class="stack">
+    <button class="btn" type="button" data-close="1">Fatto</button>
+    ${r&&r.state==='da'?`<button class="btn ghost" data-plan2>Fissa il recupero adesso</button>`:''}
+    ${l.kind==='regular'?`<button class="btn ghost" data-move>Sposta solo questa settimana</button>`:`<button class="btn ghost" data-move>Cambia data o orario</button>`}
+    ${l.status?`<button class="btn ghost" data-status="">Togli lo stato</button>`:''}
+    ${l.kind!=='regular'?`<button class="btn danger" data-del>Elimina questa lezione</button>`:''}
+  </div>`}`,sh=>{
+    sh.querySelectorAll('[data-status]').forEach(b=>b.onclick=()=>{
+      const k=b.dataset.status;
+      if(!k)setLesson(key,date,{status:undefined,recupero:undefined});
+      else if(ABSENCES.includes(k))setLesson(key,date,{status:k,recupero:l.kind==='recupero'?'no':DEFAULT_REC[k]});
+      else setLesson(key,date,{status:k,recupero:undefined});
+      if(k==='presente'){closeSheet();toast('Segnato presente');return}
+      lessonSheet(key,date);
+    });
+    sh.querySelectorAll('[data-rec]').forEach(b=>b.onclick=()=>{setLesson(key,date,{recupero:b.dataset.rec});lessonSheet(key,date)});
+    const nt=sh.querySelector('#nt');if(nt)nt.oninput=()=>setLesson(key,date,{note:nt.value.trim()||undefined});
+    const p=sh.querySelector('[data-plan2]');if(p)p.onclick=()=>planSheet(key,date);
+    const mv=sh.querySelector('[data-move]');if(mv)mv.onclick=()=>moveSheet(key,date);
+    const del=sh.querySelector('[data-del]');if(del)del.onclick=()=>{
+      if(!confirm('Eliminare questa lezione?'))return;
+      if(l.kind==='spostata'&&l.ref)setLesson(l.ref,l.refDate,{status:undefined,movedTo:undefined});
+      removeExtra(key,date);closeSheet();toast('Lezione eliminata');
+    };
+    const um=sh.querySelector('[data-undo-move]');if(um)um.onclick=()=>{removeExtra(moved.id,moved.date);setLesson(key,date,{status:undefined,movedTo:undefined});closeSheet();toast('Spostamento annullato')};
+    const g=sh.querySelector('[data-goto2]');if(g)g.onclick=()=>{ui.date=g.dataset.goto2;ui.tab='agenda';closeSheet()};
+  });
+}
+function dateTimeSheet(title,lead,defDate,defTime,cta,onOk){
+  openSheet(`<h3>${title}</h3><p class="lead">${lead}</p>
+  <div class="two"><div class="field"><label for="dd">Giorno</label><input type="date" id="dd" value="${defDate}"></div>
+  <div class="field"><label for="tt">Ora</label><input type="time" id="tt" value="${defTime}" step="300"></div></div>
+  <div class="stack"><button class="btn" id="ok">${cta}</button><button class="btn ghost" data-close="1">Annulla</button></div>`,sh=>{
+    sh.querySelector('#ok').onclick=()=>{const d=sh.querySelector('#dd').value,t=sh.querySelector('#tt').value;if(!d||!t){toast('Scegli giorno e ora');return}onOk(d,t)};
+  });
+}
+function planSheet(key,date){
+  const l=getLesson(key,date);const st=student(l.sid);
+  dateTimeSheet('Fissa il recupero',`${esc(st.name)} · lezione del ${fmtShort(date)}`,addDays(today(),1)>date?addDays(today(),1):addDays(date,1),l.time,'Fissa recupero',(d,t)=>{
+    addExtra({id:'x'+uid(),sid:l.sid,date:d,time:t,dur:l.dur||null,kind:'recupero',ref:key,refDate:date});
+    closeSheet();toast('Recupero fissato per '+fmtShort(d));
+  });
+}
+function moveSheet(key,date){
+  const l=getLesson(key,date);const st=student(l.sid);
+  if(l.kind==='regular'){
+    dateTimeSheet('Sposta questa lezione',`${esc(st.name)} · solo la lezione di ${fmtShort(date)}; le altre settimane restano uguali.`,date,l.time,'Sposta lezione',(d,t)=>{
+      const id='x'+uid();addExtra({id,sid:l.sid,date:d,time:t,dur:l.dur||null,kind:'spostata',ref:key,refDate:date});
+      setLesson(key,date,{status:'spostata',movedTo:id,recupero:undefined});
+      ui.date=d;closeSheet();toast('Lezione spostata a '+fmtShort(d));
+    });
+  }else{
+    dateTimeSheet('Cambia data o orario',esc(st.name),date,l.time,'Salva',(d,t)=>{
+      const m=month(mk(date));const x=m.extras.find(e=>e.id===key);
+      if(mk(d)!==mk(date)){m.extras=m.extras.filter(e=>e.id!==key);markDirty(mk(date));x.date=d;x.time=t;addExtra(x)}
+      else{x.date=d;x.time=t;markDirty(mk(d))}
+      ui.date=d;closeSheet();toast('Lezione aggiornata');
+    });
+  }
+}
+function addLessonSheet(){
+  const opts=S.students.filter(s=>!s.until||s.until>=ui.date).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  openSheet(`<h3>Lezione extra</h3><p class="lead">${fmtLong(ui.date)} · una lezione in più, fuori dall’orario fisso.</p>
+  <div class="field"><label for="ss">Allievo</label><select id="ss">${opts}</select></div>
+  <div class="field"><label for="tt">Ora</label><input type="time" id="tt" value="15:00" step="300"></div>
+  <p class="note">Per recuperare un’assenza usa invece “Fissa recupero”, così resta collegata alla lezione saltata.</p>
+  <div class="stack"><button class="btn" id="ok">Aggiungi lezione</button><button class="btn ghost" data-close="1">Annulla</button></div>`,sh=>{
+    sh.querySelector('#ok').onclick=()=>{const sid=sh.querySelector('#ss').value,t=sh.querySelector('#tt').value;if(!sid||!t)return;
+      const sl=slotAt(student(sid),ui.date);addExtra({id:'x'+uid(),sid,date:ui.date,time:t,dur:sl?sl.dur:null,kind:'extra'});closeSheet();toast('Lezione aggiunta')};
+  });
+}
+function studentSheet(id){
+  const isNew=!id;const st=isNew?{name:'',slots:[{from:today(),day:dow(today()),time:'15:00',dur:45}]}:student(id);
+  const sl=isNew?st.slots[0]:(slotAt(st,today())||st.slots[st.slots.length-1]);
+  const c=isNew?null:statsFor(id);
+  const hist=isNew?[]:studentLessons(id,today()).slice(0,40);
+  const archived=!isNew&&st.until&&st.until<today();
+  openSheet(`<h3>${isNew?'Nuovo allievo':esc(st.name)}</h3><p class="lead">${isNew?'Inserisci giorno e orario fisso della lezione settimanale.':(sl?DAYS_FULL[sl.day]+' alle '+sl.time:'')}</p>
+  ${c?`<div class="statbox"><div><b>${c.presente}</b><span>presenze</span></div><div><b>${c.giust+c.ingiust}</b><span>assenze (${c.giust} giust.)</span></div><div><b>${c.rec}</b><span>da recuperare</span></div></div>
+    <p class="note">${c.insegnante} saltate per me · ${c.spostata} spostate${c.chiuso?' · '+c.chiuso+' chiuse':''}${c.todo?' · '+c.todo+' da segnare':''}</p>`:''}
+  <form id="sf" class="sect" novalidate action="#">
+  <div class="field"><label for="nm">Nome</label><input id="nm" value="${esc(st.name)}" placeholder="Nome e cognome" autocomplete="off" enterkeyhint="done"></div>
+  <div class="two"><div class="field"><label for="dy">Giorno fisso</label><select id="dy">${DAYS_FULL.map((d,i)=>`<option value="${i}"${sl&&sl.day===i?' selected':''}>${d}</option>`).join('')}</select></div>
+  <div class="field"><label for="tm">Ora</label><input type="time" id="tm" value="${sl?sl.time:'15:00'}" step="300"></div></div>
+  <div class="two"><div class="field"><label for="du">Durata</label><select id="du">${[30,45,60,90].map(n=>`<option${sl&&sl.dur===n?' selected':''}>${n}</option>`).join('')}</select></div>
+  <div class="field"><label for="fr">${isNew?'Lezioni a partire dal':'Nuovo orario valido dal'}</label><input type="date" id="fr" value="${isNew?monday(today()):today()}"></div></div>
+  ${isNew?'':'<p class="note" style="margin-top:-4px">Se cambi giorno o ora, le lezioni passate restano col vecchio orario.</p>'}
+  <p class="note hidden" id="err" role="alert" style="color:var(--bad);font-weight:600"></p>
+  <div class="stack"><button class="btn" id="sv" type="submit">${isNew?'Aggiungi allievo':'Salva modifiche'}</button>
+  ${isNew?'':archived?`<button class="btn ghost" id="ar" type="button">Riattiva allievo</button>`:`<button class="btn ghost" id="ar" type="button">Archivia (ha smesso)</button>`}
+  ${isNew?'':`<button class="btn danger" id="dl" type="button">Elimina allievo e storico</button>`}
+  <button class="btn ghost" type="button" data-close="1">${isNew?'Annulla':'Chiudi'}</button></div></form>
+  ${hist.length?`<div class="sect"><div class="t">Storico recente</div><div class="hist">${hist.map(l=>`<div class="hrow"><span>${fmtShort(l.date)} · ${l.time}${l.kind==='recupero'?' <span class="chip c-recupero">recupero</span>':''}${l.kind==='spostata'?' <span class="chip c-spostata">spostata</span>':''}</span><span>${chipFor(l)||'<span class="chip">—</span>'}</span></div>`).join('')}</div></div>`:''}`,sh=>{
+    const err=t=>{const e=sh.querySelector('#err');e.textContent=t;e.classList.remove('hidden');e.scrollIntoView({block:'nearest'})};
+    const save=()=>{try{
+      const name=sh.querySelector('#nm').value.trim();if(!name){err('Scrivi il nome dell’allievo.');sh.querySelector('#nm').focus();return}
+      const day=+sh.querySelector('#dy').value,time=sh.querySelector('#tm').value||'15:00',dur=+sh.querySelector('#du').value,from=sh.querySelector('#fr').value||today();
+      if(isNew){S.students.push({id:'s'+uid(),name,slots:[{from,day,time,dur}]});}
+      else{
+        st.name=name;
+        if(!sl||sl.day!==day||sl.time!==time||sl.dur!==dur){
+          st.slots=st.slots.filter(s=>s.from<from);st.slots.push({from,day,time,dur});
+          if(!st.slots.length||st.slots[0].from>from)st.slots.sort((a,b)=>a.from.localeCompare(b.from));
+        }
+      }
+      markDirty('students');
+      if(isNew){const s=S.students[S.students.length-1];let d=s.slots[0].from;while(dow(d)!==s.slots[0].day)d=addDays(d,1);
+        ui.tab='allievi';ui.allView='elenco';closeSheet();toast(`${name} aggiunto: prima lezione ${fmtShort(d)} alle ${s.slots[0].time}`)}
+      else{closeSheet();toast('Modifiche salvate')}
+    }catch(e){err('Non sono riuscito a salvare: '+(e&&e.message?e.message:e)+'. Riprova; se succede ancora, dimmi questo messaggio.')}};
+    sh.querySelector('#sf').addEventListener('submit',e=>{e.preventDefault();save()});
+    sh.querySelector('#sv').addEventListener('click',e=>{e.preventDefault();save()});
+    sh.querySelector('#nm').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur()}});
+    const ar=sh.querySelector('#ar');if(ar)ar.onclick=()=>{if(archived)delete st.until;else st.until=addDays(today(),-1);markDirty('students');closeSheet();toast(archived?'Allievo riattivato':'Allievo archiviato')};
+    const dl=sh.querySelector('#dl');if(dl)dl.onclick=()=>{
+      if(!confirm('Eliminare '+st.name+' e tutto il suo storico? Non si può annullare.'))return;
+      S.students=S.students.filter(s=>s.id!==id);
+      for(const m in S.months){const M=S.months[m];let ch=false;
+        for(const k in M.records)if(k.startsWith(id+'@')){delete M.records[k];ch=true}
+        const n=M.extras.filter(x=>x.sid!==id);if(n.length!==M.extras.length){M.extras=n;ch=true}
+        if(ch)markDirty(m)}
+      markDirty('students');closeSheet();toast('Allievo eliminato');
+    };
+  });
+}
+
+/* ---------- export ---------- */
+async function shareOrDownload(filename,text,mime){
+  const blob=new Blob([text],{type:mime});
+  try{const f=new File([blob],filename,{type:mime});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:filename});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
+function saveCSV(rows,filename){
+  const csv='\ufeff'+rows.map(r=>r.map(v=>{v=String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\n');
+  shareOrDownload(filename,csv,'text/csv');
+}
+function exportBackup(){shareOrDownload('registro-backup-'+today()+'.json',JSON.stringify(payload()),'application/json')}
+function restoreBackup(file){
+  const rd=new FileReader();rd.onload=()=>{try{
+    const o=JSON.parse(rd.result);if(!o||!Array.isArray(o.students))throw 0;
+    const n=o.students.length;
+    if(S.students.length&&!confirm('Sostituire i dati attuali con il backup ('+n+' allievi)?'))return;
+    S=normalize(o);markDirty();closeSheet();toast('Backup ripristinato: '+n+' allievi');
+  }catch(e){toast('Questo file non è un backup del registro.')}};rd.readAsText(file);
+}
+function settingsSheet(){
+  const c=cfg||{owner:'',repo:'registro-dati',token:''};
+  openSheet(`<h3>Impostazioni</h3><p class="lead">${cfg?'Collegato a GitHub: i dati si sincronizzano tra i tuoi dispositivi.':'I dati ora sono salvati solo su questo dispositivo.'}</p>
+  <form id="gf" novalidate action="#">
+  <div class="sect"><div class="t">Sincronizzazione con GitHub</div>
+  <div class="field"><label for="go">Nome utente GitHub</label><input id="go" value="${esc(c.owner)}" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+  <div class="field"><label for="gr">Repository privato per i dati</label><input id="gr" value="${esc(c.repo)}" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+  <div class="field"><label for="gt">Codice di accesso (token)</label><input id="gt" type="password" value="${esc(c.token)}" placeholder="github_pat_…" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+  <p class="note hidden" id="gerr" role="alert" style="color:var(--bad);font-weight:600"></p>
+  <div class="stack" style="margin-top:4px"><button class="btn" id="gc" type="submit">${cfg?'Salva e sincronizza':'Collega e sincronizza'}</button>
+  ${cfg?`<button class="btn ghost" type="button" id="gs">Sincronizza adesso</button><button class="btn danger" type="button" id="gd">Scollega da questo dispositivo</button>`:''}</div></div>
+  </form>
+  <div class="sect"><div class="t">Copia di sicurezza</div>
+  <div class="stack" style="margin-top:0"><button class="btn ghost" type="button" id="bk">Scarica backup</button>
+  <label class="btn ghost" style="text-align:center;cursor:pointer">Ripristina da un backup<input type="file" id="rf" accept=".json,application/json" style="display:none"></label></div>
+  <p class="note">Il backup è un file .json con tutti gli allievi e le lezioni. Serve anche per trasferire i dati dalla versione su Claude.</p></div>
+  <div class="stack"><button class="btn ghost" type="button" data-close="1">Chiudi</button></div>`,sh=>{
+    const err=t=>{const e=sh.querySelector('#gerr');e.textContent=t;e.classList.remove('hidden')};
+    const connectGH=async()=>{
+      const n={owner:sh.querySelector('#go').value.trim(),repo:sh.querySelector('#gr').value.trim(),token:sh.querySelector('#gt').value.trim()};
+      if(!n.owner||!n.repo||!n.token){err('Compila tutti e tre i campi.');return}
+      const b=sh.querySelector('#gc');b.disabled=true;b.textContent='Verifica in corso…';
+      try{
+        const r=await ghFetch('',{},n);
+        if(!r.ok)throw await ghErr(r);
+        const j=await r.json();
+        if(!j.private&&!confirm('Attenzione: il repository “'+n.repo+'” è pubblico e chiunque potrebbe leggere i dati degli allievi. Continuare comunque?')){b.disabled=false;b.textContent='Collega e sincronizza';return}
+        cfg=n;lsSet(CFG_KEY,JSON.stringify(cfg));
+        if(S.students.length)setPending(true);
+        closeSheet();toast('Collegato a GitHub');await sync();render();
+      }catch(e){err(e.message||'Connessione non riuscita: controlla di essere online.');b.disabled=false;b.textContent=cfg?'Salva e sincronizza':'Collega e sincronizza'}
+    };
+    sh.querySelector('#gf').addEventListener('submit',e=>{e.preventDefault();connectGH()});
+    sh.querySelector('#gc').addEventListener('click',e=>{e.preventDefault();connectGH()});
+    const gs=sh.querySelector('#gs');if(gs)gs.onclick=()=>{closeSheet();sync()};
+    const gd=sh.querySelector('#gd');if(gd)gd.onclick=()=>{if(!confirm('Scollegare? I dati restano su GitHub e su questo dispositivo, ma smettono di sincronizzarsi.'))return;cfg=null;lsSet(CFG_KEY,null);lsSet(LS+'.sha',null);closeSheet();setSync('Solo su questo dispositivo')};
+    sh.querySelector('#bk').onclick=exportBackup;
+    sh.querySelector('#rf').onchange=e=>{const f=e.target.files[0];if(f)restoreBackup(f)};
+  });
+}
+async function exportMonth(){
+  const rows=[['Allievo','Svolte','Previste','Assenze giustificate','Assenze non giustificate','Saltate per me','Chiuso','Da recuperare']];
+  const s=monthSummary(ui.month);
+  Object.keys(s).sort((a,b)=>student(a).name.localeCompare(student(b).name)).forEach(id=>{const r=s[id];rows.push([student(id).name,r.presente,r.prev,r.giust,r.ingiust,r.insegnante,r.chiuso,r.rec])});
+  saveCSV(rows,'riepilogo-'+ui.month+'.csv');
+}
+async function exportCSV(){
+  const rows=[['Data','Ora','Allievo','Tipo','Stato','Recupero','Nota']];
+  const kinds={regular:'Ordinaria',recupero:'Recupero',spostata:'Spostata',extra:'Extra'};
+  const all=[];for(const s of S.students)for(const l of studentLessons(s.id,today()))all.push([l,s]);
+  all.sort((a,b)=>(a[0].date+a[0].time).localeCompare(b[0].date+b[0].time));
+  for(const [l,s] of all){const r=recoveryState(l);
+    rows.push([l.date,l.time,s.name,kinds[l.kind]||'',l.status?STATUS[l.status].label:'',r?(r.state==='fatto'?'Recuperata':r.state==='fissato'?'Fissato':'Da recuperare'):(ABSENCES.includes(l.status)?'No':''),l.note||''])}
+  saveCSV(rows,'registro-lezioni-'+today()+'.csv');
+}
+
+/* ---------- events ---------- */
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.add('hidden'),2200)}
+document.querySelector('nav.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;ui.tab=b.dataset.tab;render();window.scrollTo(0,0)});
+app.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.day){ui.date=d.day;render()}
+  else if(d.week){ui.date=addDays(ui.date,+d.week);render()}
+  else if(d.goto){ui.date=d.goto;ui.tab='agenda';render();window.scrollTo(0,0)}
+  else if(d.open)lessonSheet(d.open,ui.date);
+  else if(d.quick){const l=getLesson(d.quick,ui.date);setLesson(d.quick,ui.date,l.status==='presente'?{status:undefined}:{status:'presente',recupero:undefined});render()}
+  else if(d.plan)planSheet(d.plan,d.date);
+  else if(d.norec){setLesson(d.norec,d.date,{recupero:'no'});render();toast('Segnata come non da recuperare')}
+  else if(d.student)studentSheet(d.student);
+  else if(d.act==='newStudent')studentSheet(null);
+  else if(d.act==='addLesson')addLessonSheet();
+  else if(d.act==='export')exportCSV();
+  else if(d.act==='backup')exportBackup();
+  else if(d.act==='settings')settingsSheet();
+  else if(d.act==='hideBanner'){lsSet(LS+'.nobanner','1');render()}
+  else if(d.act==='exportMonth')exportMonth();
+  else if(d.act==='closure')closureSheet();
+  else if(d.allview){ui.allView=d.allview;render()}
+  else if(d.mon){const [y,m]=ui.month.split('-').map(Number);const dt=new Date(y,m-1+(+d.mon),1);ui.month=dt.getFullYear()+'-'+pad(dt.getMonth()+1);render()}
+});
+
+loadLocal();ui.sync=cfg?'Sincronizzazione…':'Solo su questo dispositivo';render();sync();
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
