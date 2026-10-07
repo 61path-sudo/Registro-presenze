@@ -91,6 +91,9 @@ h2{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:1.25rem;mar
 .c-todo{background:transparent;color:var(--warn);border:1px dashed var(--warn)}
 .quick{flex:none;width:42px;height:42px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);font-size:1.1rem;color:var(--ok)}
 .quick.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.endrow{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+.endrow .time{font-weight:700;font-variant-numeric:tabular-nums;min-width:48px;color:var(--ink)}
+.endrow b{font-weight:600;color:var(--ink)}
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--muted);text-align:center}
 .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;background:var(--felt);color:var(--felt-ink)}
 .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
@@ -266,6 +269,12 @@ function studentLessons(sid,upTo){
   return out.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
 }
 
+/* end of the teaching day: latest finish among lessons that actually take place */
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const toTime=n=>pad(Math.floor(n/60)%24)+':'+pad(n%60);
+function durOf(l){if(l.dur)return +l.dur;const st=student(l.sid);const sl=st&&(slotAt(st,l.date)||st.slots[st.slots.length-1]);return sl&&sl.dur?+sl.dur:45}
+function endOfDay(ls){let e=null,who=null;for(const l of ls){if(l.status==='spostata'||!student(l.sid))continue;const f=toMin(l.time)+durOf(l);if(e===null||f>e){e=f;who=l}}return e===null?null:{time:toTime(e),who}}
+
 /* make-up tracking */
 function recoveryState(l){
   if(!ABSENCES.includes(l.status)||l.recupero!=='da')return null;
@@ -425,7 +434,7 @@ function renderAgenda(){
    ${!cfg&&!lsGet(LS+'.nobanner')?`<div class="banner"><span>I dati sono salvati solo qui. Collega GitHub per averli su tutti i dispositivi.</span><span class="row" style="flex-wrap:nowrap"><button class="btn small" data-act="settings">Collega</button><button class="iconbtn" data-act="hideBanner" aria-label="Nascondi">✕</button></span></div>`:''}
    <div class="keys">${keys}${blacks}</div>
    <div class="daytitle"><h2>${fmtLong(ui.date)}</h2><span class="note">${ls.length} ${ls.length===1?'lezione':'lezioni'}</span></div>
-   <div class="list">${cards}</div>
+   <div class="list">${cards}${(()=>{const e=endOfDay(ls);return e?`<div class="endrow"><span class="time">${e.time}</span><span><b>Fine lezioni</b> · da qui l’orario è libero</span></div>`:''})()}</div>
    <div class="row addline">${S.students.length?`<button class="btn ghost small" data-act="addLesson">+ Lezione extra in questo giorno</button><button class="btn ghost small" data-act="closure">Chiusura / festività</button>`:`<button class="btn" data-act="newStudent">Aggiungi un allievo</button>`}</div>`;
 }
 function renderRecuperi(){
