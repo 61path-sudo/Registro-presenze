@@ -51,6 +51,10 @@ h2{font-family:"Young Serif",Georgia,serif;font-weight:400;font-size:1.25rem;mar
 .sub{color:var(--muted);font-size:.9rem;margin:0}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .sync{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.ver{font-family:Figtree,system-ui,sans-serif;font-size:.72rem;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:2px 8px;vertical-align:middle;margin-left:6px;letter-spacing:.02em}
+.yearbar{display:flex;align-items:center;gap:8px;margin-top:10px}
+.yearbar label{font-size:.85rem;font-weight:600;color:var(--muted)}
+.yearbar select{font-weight:700;font-size:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 30px 6px 12px;min-height:38px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px;background-repeat:no-repeat}
 .syncbtn{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:7px 12px;min-height:36px}
 .banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--felt);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:.92rem;display:flex;gap:10px;align-items:center;justify-content:space-between}
 
@@ -220,7 +224,21 @@ const DEFAULT_REC={giust:'da',ingiust:'no',insegnante:'da'};
 
 /* ---------- state ---------- */
 let S={students:[],months:{}};
-const ui={tab:'agenda',date:today(),allView:'elenco',month:mk(today())};
+const VERSION='1.0';
+/* school year: 1 September – 31 August, identified by its starting calendar year */
+const yearOf=s=>{const [y,m]=s.split('-').map(Number);return m>=9?y:y-1};
+const syStart=y=>y+'-09-01',syEnd=y=>(y+1)+'-08-31';
+const syLabel=y=>pad(y%100)+'/'+pad((y+1)%100);
+const inYear=(s,y)=>s>=syStart(y)&&s<=syEnd(y);
+const ui={tab:'agenda',date:today(),allView:'elenco',month:mk(today()),year:yearOf(today())};
+function setYear(y){ui.year=y;const t=today();
+  if(inYear(t,y)){ui.date=t;ui.month=mk(t)}else{ui.date=syStart(y);ui.month=y+'-09'}}
+function yearOptions(){
+  let lo=yearOf(today()),hi=yearOf(today())+1;
+  for(const s of S.students)for(const sl of s.slots)lo=Math.min(lo,yearOf(sl.from)),hi=Math.max(hi,yearOf(sl.from));
+  lo=Math.min(lo,ui.year);hi=Math.max(hi,ui.year);const out=[];for(let y=hi;y>=lo;y--)out.push(y);return out;
+}
+function studentInYear(s,y){return s.slots.length&&s.slots[0].from<=syEnd(y)&&(!s.until||s.until>=syStart(y))}
 const LS='pianoRegistro.v1';
 
 function month(m){return S.months[m]||(S.months[m]={records:{},extras:[]})}
@@ -383,7 +401,8 @@ function render(){
   if(ui.tab==='agenda')renderAgenda();else if(ui.tab==='recuperi')renderRecuperi();else renderAllievi();
 }
 function header(title,sub){
-  return `<div class="top"><div><h1>${title}</h1><p class="sub">${sub}</p></div><button class="sync syncbtn" data-act="settings" aria-label="Impostazioni e sincronizzazione"><span id="sync">${esc(ui.sync||'')}</span> ⚙︎</button></div>`;
+  return `<div class="top"><div><h1>${title}<span class="ver">V.${VERSION}</span></h1><p class="sub">${sub}</p></div><button class="sync syncbtn" data-act="settings" aria-label="Impostazioni e sincronizzazione"><span id="sync">${esc(ui.sync||'')}</span> ⚙︎</button></div>
+  <div class="yearbar"><label for="ysel">Anno scolastico</label><select id="ysel">${yearOptions().map(y=>`<option value="${y}"${y===ui.year?' selected':''}>${syLabel(y)}${y===yearOf(today())?' (in corso)':''}</option>`).join('')}</select></div>`;
 }
 function chipFor(l){
   const t=today();
@@ -438,7 +457,7 @@ function renderAgenda(){
    <div class="row addline">${S.students.length?`<button class="btn ghost small" data-act="addLesson">+ Lezione extra in questo giorno</button><button class="btn ghost small" data-act="closure">Chiusura / festività</button>`:`<button class="btn" data-act="newStudent">Aggiungi un allievo</button>`}</div>`;
 }
 function renderRecuperi(){
-  const p=pendingRecoveries();const by={};
+  const all=pendingRecoveries();const p=all.filter(it=>inYear(it.l.date,ui.year));const others=all.length-p.length;const by={};
   for(const it of p)(by[it.l.sid]=by[it.l.sid]||[]).push(it);
   const groups=Object.keys(by).map(sid=>{
     const st=student(sid);const items=by[sid].sort((a,b)=>a.l.date.localeCompare(b.l.date));
@@ -448,24 +467,27 @@ function renderRecuperi(){
       ${r.state==='fissato'?`<button class="btn ghost small" data-goto="${r.x.date}">Fissato ${fmtShort(r.x.date)} ${r.x.time}</button>`:`<button class="btn small" data-plan="${l.key}" data-date="${l.date}">Fissa recupero</button>`}
     </div>`).join('')}</div>`}).join('');
   app.innerHTML=header('Recuperi','Lezioni saltate che vanno ancora recuperate')+
-  `<div style="margin-top:16px">${groups||'<div class="empty">Nessun recupero in sospeso. Quando segni un’assenza come “da recuperare”, comparirà qui.</div>'}</div>`;
+  `<div style="margin-top:16px">${groups||`<div class="empty">Nessun recupero in sospeso nell’anno ${syLabel(ui.year)}. Quando segni un’assenza come “da recuperare”, comparirà qui.</div>`}</div>
+  ${others?`<p class="note">Ci sono ancora ${others} ${others===1?'recupero':'recuperi'} in sospeso in altri anni scolastici: cambia anno dal menu in alto per vederli.</p>`:''}`;
 }
+function yearLessons(sid,y){const end=syEnd(y)<today()?syEnd(y):today();return studentLessons(sid,end).filter(l=>l.date>=syStart(y))}
 function statsFor(sid){
-  const ls=studentLessons(sid,today());const c={presente:0,giust:0,ingiust:0,insegnante:0,spostata:0,chiuso:0,todo:0,rec:0};
+  const ls=yearLessons(sid,ui.year);const c={presente:0,giust:0,ingiust:0,insegnante:0,spostata:0,chiuso:0,todo:0,rec:0};
   for(const l of ls){if(l.status)c[l.status]++;else c.todo++;const r=recoveryState(l);if(r&&r.state!=='fatto')c.rec++}
   return c;
 }
 function renderAllievi(){
   if(ui.allView==='mese')return renderMese();
-  const act=S.students.filter(s=>!s.until||s.until>=today()).sort((a,b)=>a.name.localeCompare(b.name));
-  const arch=S.students.filter(s=>s.until&&s.until<today());
-  const card=s=>{const sl=slotAt(s,today())||s.slots[s.slots.length-1];const c=statsFor(s.id);
+  const yr=S.students.filter(s=>studentInYear(s,ui.year));
+  const act=yr.filter(s=>!s.until||s.until>=today()).sort((a,b)=>a.name.localeCompare(b.name));
+  const arch=yr.filter(s=>s.until&&s.until<today());
+  const card=s=>{const ref=inYear(today(),ui.year)?today():syEnd(ui.year)<today()?syEnd(ui.year):syStart(ui.year);const sl=slotAt(s,ref)||s.slots.filter(x=>x.from<=syEnd(ui.year)).pop()||s.slots[s.slots.length-1];const c=statsFor(s.id);
     return `<button class="card" data-student="${s.id}"><span class="main"><div class="name">${esc(s.name)}</div>
       <div class="meta">${sl?DAYS_FULL[sl.day]+' '+sl.time+' · '+sl.dur+' min':''}</div>
       <div class="stats"><span class="chip c-presente">${c.presente} pres.</span>${c.giust?`<span class="chip c-giust">${c.giust} giust.</span>`:''}${c.ingiust?`<span class="chip c-ingiust">${c.ingiust} non giust.</span>`:''}${c.insegnante?`<span class="chip c-insegnante">${c.insegnante} per me</span>`:''}${c.rec?`<span class="chip c-recupero">${c.rec} da recuperare</span>`:''}</div></span></button>`};
-  app.innerHTML=header('Allievi',`${act.length} ${act.length===1?'allievo attivo':'allievi attivi'}`)+segAll()+
+  app.innerHTML=header('Allievi',`${act.length+arch.length} ${act.length+arch.length===1?'allievo':'allievi'} nell’anno ${syLabel(ui.year)}`)+segAll()+
   `<div class="row" style="margin:16px 0 12px"><button class="btn" data-act="newStudent">+ Nuovo allievo</button>${S.students.length?`<button class="btn ghost" data-act="export">Esporta CSV</button><button class="btn ghost" data-act="backup">Backup completo</button>`:''}</div>
-   <div class="list">${act.map(card).join('')||'<div class="empty">Ancora nessun allievo.</div>'}</div>
+   <div class="list">${act.map(card).join('')||`<div class="empty">${S.students.length?'Nessun allievo attivo in questo anno scolastico.':'Ancora nessun allievo.'}</div>`}</div>
    ${arch.length?`<h2>Archiviati</h2><div class="list">${arch.map(card).join('')}</div>`:''}`;
 }
 
@@ -576,7 +598,7 @@ function lessonSheet(key,date){
       removeExtra(key,date);closeSheet();toast('Lezione eliminata');
     };
     const um=sh.querySelector('[data-undo-move]');if(um)um.onclick=()=>{removeExtra(moved.id,moved.date);setLesson(key,date,{status:undefined,movedTo:undefined});closeSheet();toast('Spostamento annullato')};
-    const g=sh.querySelector('[data-goto2]');if(g)g.onclick=()=>{ui.date=g.dataset.goto2;ui.tab='agenda';closeSheet()};
+    const g=sh.querySelector('[data-goto2]');if(g)g.onclick=()=>{ui.date=g.dataset.goto2;ui.year=yearOf(ui.date);ui.tab='agenda';closeSheet()};
   });
 }
 function dateTimeSheet(title,lead,defDate,defTime,cta,onOk){
@@ -600,14 +622,14 @@ function moveSheet(key,date){
     dateTimeSheet('Sposta questa lezione',`${esc(st.name)} · solo la lezione di ${fmtShort(date)}; le altre settimane restano uguali.`,date,l.time,'Sposta lezione',(d,t)=>{
       const id='x'+uid();addExtra({id,sid:l.sid,date:d,time:t,dur:l.dur||null,kind:'spostata',ref:key,refDate:date});
       setLesson(key,date,{status:'spostata',movedTo:id,recupero:undefined});
-      ui.date=d;closeSheet();toast('Lezione spostata a '+fmtShort(d));
+      ui.date=d;ui.year=yearOf(d);closeSheet();toast('Lezione spostata a '+fmtShort(d));
     });
   }else{
     dateTimeSheet('Cambia data o orario',esc(st.name),date,l.time,'Salva',(d,t)=>{
       const m=month(mk(date));const x=m.extras.find(e=>e.id===key);
       if(mk(d)!==mk(date)){m.extras=m.extras.filter(e=>e.id!==key);markDirty(mk(date));x.date=d;x.time=t;addExtra(x)}
       else{x.date=d;x.time=t;markDirty(mk(d))}
-      ui.date=d;closeSheet();toast('Lezione aggiornata');
+      ui.date=d;ui.year=yearOf(d);closeSheet();toast('Lezione aggiornata');
     });
   }
 }
@@ -626,7 +648,7 @@ function studentSheet(id){
   const isNew=!id;const st=isNew?{name:'',slots:[{from:today(),day:dow(today()),time:'15:00',dur:45}]}:student(id);
   const sl=isNew?st.slots[0]:(slotAt(st,today())||st.slots[st.slots.length-1]);
   const c=isNew?null:statsFor(id);
-  const hist=isNew?[]:studentLessons(id,today()).slice(0,40);
+  const hist=isNew?[]:yearLessons(id,ui.year).slice(0,60);
   const archived=!isNew&&st.until&&st.until<today();
   openSheet(`<h3>${isNew?'Nuovo allievo':esc(st.name)}</h3><p class="lead">${isNew?'Inserisci giorno e orario fisso della lezione settimanale.':(sl?DAYS_FULL[sl.day]+' alle '+sl.time:'')}</p>
   ${c?`<div class="statbox"><div><b>${c.presente}</b><span>presenze</span></div><div><b>${c.giust+c.ingiust}</b><span>assenze (${c.giust} giust.)</span></div><div><b>${c.rec}</b><span>da recuperare</span></div></div>
@@ -636,14 +658,14 @@ function studentSheet(id){
   <div class="two"><div class="field"><label for="dy">Giorno fisso</label><select id="dy">${DAYS_FULL.map((d,i)=>`<option value="${i}"${sl&&sl.day===i?' selected':''}>${d}</option>`).join('')}</select></div>
   <div class="field"><label for="tm">Ora</label><input type="time" id="tm" value="${sl?sl.time:'15:00'}" step="300"></div></div>
   <div class="two"><div class="field"><label for="du">Durata</label><select id="du">${[30,45,60,90].map(n=>`<option${sl&&sl.dur===n?' selected':''}>${n}</option>`).join('')}</select></div>
-  <div class="field"><label for="fr">${isNew?'Lezioni a partire dal':'Nuovo orario valido dal'}</label><input type="date" id="fr" value="${isNew?monday(today()):today()}"></div></div>
+  <div class="field"><label for="fr">${isNew?'Lezioni a partire dal':'Nuovo orario valido dal'}</label><input type="date" id="fr" value="${isNew?(ui.year<=yearOf(today())?monday(today()):syStart(ui.year)):today()}"></div></div>
   ${isNew?'':'<p class="note" style="margin-top:-4px">Se cambi giorno o ora, le lezioni passate restano col vecchio orario.</p>'}
   <p class="note hidden" id="err" role="alert" style="color:var(--bad);font-weight:600"></p>
   <div class="stack"><button class="btn" id="sv" type="submit">${isNew?'Aggiungi allievo':'Salva modifiche'}</button>
   ${isNew?'':archived?`<button class="btn ghost" id="ar" type="button">Riattiva allievo</button>`:`<button class="btn ghost" id="ar" type="button">Archivia (ha smesso)</button>`}
   ${isNew?'':`<button class="btn danger" id="dl" type="button">Elimina allievo e storico</button>`}
   <button class="btn ghost" type="button" data-close="1">${isNew?'Annulla':'Chiudi'}</button></div></form>
-  ${hist.length?`<div class="sect"><div class="t">Storico recente</div><div class="hist">${hist.map(l=>`<div class="hrow"><span>${fmtShort(l.date)} · ${l.time}${l.kind==='recupero'?' <span class="chip c-recupero">recupero</span>':''}${l.kind==='spostata'?' <span class="chip c-spostata">spostata</span>':''}</span><span>${chipFor(l)||'<span class="chip">—</span>'}</span></div>`).join('')}</div></div>`:''}`,sh=>{
+  ${hist.length?`<div class="sect"><div class="t">Storico ${syLabel(ui.year)}</div><div class="hist">${hist.map(l=>`<div class="hrow"><span>${fmtShort(l.date)} · ${l.time}${l.kind==='recupero'?' <span class="chip c-recupero">recupero</span>':''}${l.kind==='spostata'?' <span class="chip c-spostata">spostata</span>':''}</span><span>${chipFor(l)||'<span class="chip">—</span>'}</span></div>`).join('')}</div></div>`:''}`,sh=>{
     const err=t=>{const e=sh.querySelector('#err');e.textContent=t;e.classList.remove('hidden');e.scrollIntoView({block:'nearest'})};
     const save=()=>{try{
       const name=sh.querySelector('#nm').value.trim();if(!name){err('Scrivi il nome dell’allievo.');sh.querySelector('#nm').focus();return}
@@ -745,21 +767,22 @@ async function exportMonth(){
 async function exportCSV(){
   const rows=[['Data','Ora','Allievo','Tipo','Stato','Recupero','Nota']];
   const kinds={regular:'Ordinaria',recupero:'Recupero',spostata:'Spostata',extra:'Extra'};
-  const all=[];for(const s of S.students)for(const l of studentLessons(s.id,today()))all.push([l,s]);
+  const all=[];for(const s of S.students)for(const l of yearLessons(s.id,ui.year))all.push([l,s]);
   all.sort((a,b)=>(a[0].date+a[0].time).localeCompare(b[0].date+b[0].time));
   for(const [l,s] of all){const r=recoveryState(l);
     rows.push([l.date,l.time,s.name,kinds[l.kind]||'',l.status?STATUS[l.status].label:'',r?(r.state==='fatto'?'Recuperata':r.state==='fissato'?'Fissato':'Da recuperare'):(ABSENCES.includes(l.status)?'No':''),l.note||''])}
-  saveCSV(rows,'registro-lezioni-'+today()+'.csv');
+  saveCSV(rows,'registro-lezioni-'+syLabel(ui.year).replace('/','-')+'.csv');
 }
 
 /* ---------- events ---------- */
+document.getElementById('app').addEventListener('change',e=>{if(e.target.id==='ysel'){setYear(+e.target.value);render();window.scrollTo(0,0)}});
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.add('hidden'),2200)}
 document.querySelector('nav.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;ui.tab=b.dataset.tab;render();window.scrollTo(0,0)});
 app.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const d=b.dataset;
-  if(d.day){ui.date=d.day;render()}
-  else if(d.week){ui.date=addDays(ui.date,+d.week);render()}
-  else if(d.goto){ui.date=d.goto;ui.tab='agenda';render();window.scrollTo(0,0)}
+  if(d.day){ui.date=d.day;ui.year=yearOf(d.day);render()}
+  else if(d.week){ui.date=addDays(ui.date,+d.week);ui.year=yearOf(ui.date);render()}
+  else if(d.goto){ui.date=d.goto;ui.year=yearOf(d.goto);ui.tab='agenda';render();window.scrollTo(0,0)}
   else if(d.open)lessonSheet(d.open,ui.date);
   else if(d.quick){const l=getLesson(d.quick,ui.date);setLesson(d.quick,ui.date,l.status==='presente'?{status:undefined}:{status:'presente',recupero:undefined});render()}
   else if(d.plan)planSheet(d.plan,d.date);
@@ -774,7 +797,7 @@ app.addEventListener('click',e=>{
   else if(d.act==='exportMonth')exportMonth();
   else if(d.act==='closure')closureSheet();
   else if(d.allview){ui.allView=d.allview;render()}
-  else if(d.mon){const [y,m]=ui.month.split('-').map(Number);const dt=new Date(y,m-1+(+d.mon),1);ui.month=dt.getFullYear()+'-'+pad(dt.getMonth()+1);render()}
+  else if(d.mon){const [y,m]=ui.month.split('-').map(Number);const dt=new Date(y,m-1+(+d.mon),1);ui.month=dt.getFullYear()+'-'+pad(dt.getMonth()+1);ui.year=yearOf(ui.month+'-01');render()}
 });
 
 loadLocal();ui.sync=cfg?'Sincronizzazione…':'Solo su questo dispositivo';render();sync();
