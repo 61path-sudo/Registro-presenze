@@ -231,7 +231,7 @@ const DEFAULT_REC={giust:'da',ingiust:'no',insegnante:'da'};
 
 /* ---------- state ---------- */
 let S={students:[],months:{}};
-const VERSION='1.1';
+const VERSION='1.2';
 /* school year: 1 September – 31 August, identified by its starting calendar year */
 const yearOf=s=>{const [y,m]=s.split('-').map(Number);return m>=9?y:y-1};
 const syStart=y=>y+'-09-01',syEnd=y=>(y+1)+'-08-31';
@@ -684,7 +684,8 @@ function addLessonSheet(){
 }
 function studentSheet(id){
   const isNew=!id;const st=isNew?{name:'',slots:[{from:today(),day:dow(today()),time:'15:00',dur:45}]}:student(id);
-  const sl=isNew?st.slots[0]:(slotAt(st,today())||st.slots[st.slots.length-1]);
+  const sl=isNew?st.slots[0]:st.slots[st.slots.length-1];
+  const nextLesson=isNew?null:(()=>{let d=today();for(let i=0;i<120;i++,d=addDays(d,1))if(occurs(sl,d))return d;return null})();
   const c=isNew?null:statsFor(id);
   const hist=isNew?[]:yearLessons(id,ui.year).slice(0,60);
   const archived=!isNew&&st.until&&st.until<today();
@@ -697,7 +698,7 @@ function studentSheet(id){
   <div class="field"><label for="tm">Ora</label><input type="time" id="tm" value="${sl?sl.time:'15:00'}" step="300"></div></div>
   <div class="two"><div class="field"><label for="du">Durata</label><select id="du">${[30,45,60,90].map(n=>`<option${sl&&sl.dur===n?' selected':''}>${n}</option>`).join('')}</select></div>
   <div class="field"><label for="fq">Frequenza</label><select id="fq">${[[1,'Ogni settimana'],[2,'Ogni 2 settimane'],[3,'Ogni 3 settimane'],[4,'Ogni 4 settimane']].map(([v,t])=>`<option value="${v}"${(+((sl&&sl.every)||1))===v?' selected':''}>${t}</option>`).join('')}</select></div></div>
-  <div class="field"><label for="fr">${isNew?'Prima lezione dal':'Nuovo orario valido dal'}</label><input type="date" id="fr" value="${isNew?(ui.year<=yearOf(today())?monday(today()):syStart(ui.year)):today()}"></div>
+  <div class="field"><label for="fr">${isNew?'Prima lezione dal':'Nuovo orario valido dal'}</label><input type="date" id="fr" value="${isNew?(ui.year<=yearOf(today())?monday(today()):syStart(ui.year)):(nextLesson||today())}"></div>
   <p class="note" id="frnote" style="margin-top:-4px"></p>
   <p class="note hidden" id="err" role="alert" style="color:var(--bad);font-weight:600"></p>
   <div class="stack"><button class="btn" id="sv" type="submit">${isNew?'Aggiungi allievo':'Salva modifiche'}</button>
@@ -718,15 +719,17 @@ function studentSheet(id){
       if(isNew){S.students.push({id:'s'+uid(),name,slots:[slot]});}
       else{
         st.name=name;
-        if(!sl||sl.day!==day||sl.time!==time||sl.dur!==dur||(+sl.every||1)!==every){
+        const sameRhythm=every===1||anchorOf(sl)===anchorOf(slot)||(occurs(sl,anchorOf(slot))&&anchorOf(slot)>=sl.from);
+        if(!sl||sl.day!==day||sl.time!==time||sl.dur!==dur||(+sl.every||1)!==every||!sameRhythm||from<sl.from){
           st.slots=st.slots.filter(s=>s.from<from);st.slots.push(slot);
-          if(!st.slots.length||st.slots[0].from>from)st.slots.sort((a,b)=>a.from.localeCompare(b.from));
+          st.slots.sort((a,b)=>a.from.localeCompare(b.from));
         }
       }
       markDirty('students');
       if(isNew){const s=S.students[S.students.length-1];const d=anchorOf(s.slots[0]);
         ui.tab='allievi';ui.allView='elenco';closeSheet();toast(`${name} aggiunto: prima lezione ${fmtShort(d)} alle ${s.slots[0].time}`)}
-      else{closeSheet();toast('Modifiche salvate')}
+      else{const ns=st.slots[st.slots.length-1];let nx=today();for(let i=0;i<120&&!occurs(ns,nx);i++)nx=addDays(nx,1);
+        closeSheet();toast(occurs(ns,nx)?'Salvato: prossima lezione '+fmtShort(nx)+' alle '+ns.time:'Modifiche salvate')}
     }catch(e){err('Non sono riuscito a salvare: '+(e&&e.message?e.message:e)+'. Riprova; se succede ancora, dimmi questo messaggio.')}};
     sh.querySelector('#sf').addEventListener('submit',e=>{e.preventDefault();save()});
     sh.querySelector('#sv').addEventListener('click',e=>{e.preventDefault();save()});
